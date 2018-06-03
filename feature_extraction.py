@@ -5,6 +5,53 @@
 ########################
 
 
+from sklearn.tree import _tree
+from sklearn import tree
+import graphviz
+from treeinterpreter import treeinterpreter as ti
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import GradientBoostingClassifier
+from pprint import pprint
+from sklearn.model_selection import train_test_split
+from sklearn import datasets
+from sklearn import svm
+import csv
+import pandas as pd
+from statistics import mean
+from statistics import variance
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+from statistics import median
+import numpy as np
+import sys, argparse
+import scipy
+import matplotlib as plt
+from csv import reader
+import mglearn
+import copy
+from sklearn.tree import export_graphviz
+from sklearn.model_selection import RandomizedSearchCV
+from sklearn import metrics
+import os
+import subprocess
+from __future__ import division
+import math
+import os, sys
+import subprocess
+import sklearn
+from sklearn.tree import _tree
+# for MR images
+from nipy import load_image
+from nilearn import plotting
+from nilearn import image
+from dipy.data import fetch_tissue_data, read_tissue_data
+from dipy.segment.tissue import TissueClassifierHMRF
+
+
 # extracting features from time series of data in spiral drawings data set
 def extract_features(df):
     

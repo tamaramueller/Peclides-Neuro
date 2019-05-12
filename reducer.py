@@ -1,13 +1,15 @@
 import copy
 
 from personalisier import Personaliser
+import helpers
+
 
 class Reducer:
 
-    def __init__(self, rule_list):
+    def __init__(self, rule_list, random_forest):
         self.rule_list = rule_list
         self.len = len(self.rule_list)
-        self.personaliser = Personaliser()
+        self.personaliser = Personaliser(random_forest)
 
     def reduce_rules(self):
         to_del = []
@@ -28,18 +30,11 @@ class Reducer:
 
     def eliminate_weakest_rules_2(self, favourite_features, numtoelim, ruleset, xtrain, ytrain, k):
 
-        if favourite_features == []:
-            rulescores = get_rule_score2_newApply(ruleset=ruleset, xtrain=xtrain, ytrain=ytrain, k=k)
-        else:
-            rulescores = get_rule_score2_pers_set_newApply(ruleset=ruleset, xtrain=xtrain, ytrain=ytrain, k=k,
-                                                           favourite_features=favourite_features)
-
+        rule_scores = self.personaliser.get_rule_score2_pers_set_new_apply(ruleset=ruleset, xtrain=xtrain, ytrain=ytrain,
+                                                                           k=k, favourite_features=favourite_features)
         rules = copy.deepcopy(ruleset)
 
         for i in range(0, numtoelim):
-            index = get_index_min(rulescores)
-            # print(index)
+            index = helpers.get_index_min(rule_scores)
             del rules[index]
-            del rulescores[index]
-
-        return rules
+            del rule_scores[index]

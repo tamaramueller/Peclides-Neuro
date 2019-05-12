@@ -1,52 +1,56 @@
 from Tkinter import *
 import tkMessageBox
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import pandas as pd
+import numpy as np
 
 from reducer import Reducer
 import helpers
 
 
+red_ruleset = []
+new_ruleset = []
+
+
 class Gui:
 
-    def __init__(self, rule_list):
-        self.red_ruleset = []
-        self.new_ruleset = []
-        self.reducer = Reducer(rule_list)
+    def __init__(self, rule_list, random_forest):
+        self.random_forest = random_forest
+        self.reducer = Reducer(rule_list, self.random_forest)
 
-        # eliminate useless queries within a rule
-    def first_reduction(self, rule_set, label):
-        self.red_ruleset = self.reducer.reduce_rules(rule_set)
-        label.config(text="new rule size: " + str(len(self.red_ruleset)))
+        # self.red_ruleset = rule_list
+        # self.new_ruleset = rule_list
 
-    def reduce_action(self, entry_field, reduce_label):
-        features = entry_field.get()
-        percentage = entry_field.get()
+    @staticmethod
+    def print_rule(rule, feature_names):
+        ret = 'if '
+        for i in range(0, len(rule) - 1):
+            if rule[i][1] == 'l':
+                lower_greater = '<='
+            else:
+                lower_greater = '>'
+            ret += feature_names[rule[i][0]] + " " + lower_greater + " " + str(rule[i][2])
+            if i < len(rule) - 2:
+                ret += ' and '
+            else:
+                ret += ' then '
 
-        if features == "":
-            features = []
+        if rule[len(rule) - 1][0] > rule[len(rule) - 1][1]:
+            ret += '\nHEALTHY!'
         else:
-            features = helpers.string_to_int_list(features)
+            ret += '\nDISEASED!'
 
-        if percentage == "":
-            reduce_label.config(text="no percentage set")
-        else:
-            size = 0
-            acc = 0
-            spec = 0
-            sens = 0
+        return ret
 
-            numtoelim = int((1 - (int(percentage) / 100)) * len(self.red_ruleset))
-            self.new_ruleset = eliminate_weakest_rules_2(favourite_features=features, k=4, numtoelim=numtoelim,
-                                                         ruleset=self.red_ruleset, xtrain=X_train, ytrain=y_train)
-            vector_pred = apply_ruleset_get_vector_new(ruleset=new_ruleset, xtest=X_test)
+    @staticmethod
+    def print_all_rules(ruleset, feature_names):
+        ret = ''
+        for rule in ruleset:
+            ret += Gui.print_rule(rule, feature_names)
+            ret += ' \n '
 
-            acc = get_accuracy_of_ruleset_new(ruleset=self.new_ruleset, xtest=X_test, ytest=y_test)
-
-            spec = get_specificity(reslist=vector_pred, truevals=y_test)
-            sens = get_sensitivity(reslist=vector_pred, truevals=y_test)
-
-            reduce_label.config(text="New Rule Size:  " + str(len(self.new_ruleset)))
-            acc_label.config(
-                text="Accuracy: " + str(acc) + ", Sensitivity: " + str(sens) + ", Specificity: " + str(spec))
+        return ret
 
     # implementation of the GUI
     # feature_names: list of strings with all feature names
@@ -56,8 +60,11 @@ class Gui:
     # X_test: dataframe with all data samples of test set
     # y_test: ground truth of X_test as array
     def window(self, feature_names, data_set_name, ruleset, X_train, y_train, X_test, y_test):
-        self.red_ruleset = ruleset
-        self.new_ruleset = ruleset
+        global red_ruleset
+        global new_ruleset
+
+        red_ruleset = ruleset
+        new_ruleset = ruleset
 
         feature_info = "Please name your favourite features. Rules containing them will be less likely to be deleted " \
                        "from the rule set. You can name as many as you want. The order matters: the first feature is " \
@@ -66,39 +73,47 @@ class Gui:
         perc_info = "Pleas name the percentage of the size of the original rule set, you would like the reduced rule set " \
                     "to have. Please only type in the number, without the percent sign. An example would be: \n \t 30"
 
+        # eliminate useless queries within a rule
+        def first_reduction():
+            global new_ruleset
+            global red_ruleset
+
+            red_ruleset = self.reducer.reduce_rules()
+            red1_label.config(text="new rule size: " + str(len(red_ruleset)))
+
         # reduce the rule set based on given percentage and preferred features
         def reduce_action():
+            global new_ruleset
+            global red_ruleset
+
             features = eingabefeld.get()
             percentage = entrytext.get()
 
-            if (features == ""):
-                featues = []
+            if features == "":
+                features = []
             else:
                 features = helpers.string_to_int_list(features)
 
-            if ((percentage == "")):
+            if percentage == "":
                 reduce_label.config(text="no percentage set")
             else:
-                size = 0
-                acc = 0
-                spec = 0
-                sens = 0
+                numtoelim = int((1 - (int(percentage) / 100)) * len(red_ruleset))
+                self.random_forest.new_ruleset = self.reducer.eliminate_weakest_rules_2(favourite_features=features, k=4, numtoelim=numtoelim,
+                                                        ruleset=red_ruleset, xtrain=X_train, ytrain=y_train)
+                vector_pred = self.random_forest.apply_ruleset_get_vector_new(ruleset=new_ruleset, xtest=X_test)
 
-                numtoelim = int((1 - (int(percentage) / 100)) * len(self.red_ruleset))
-                self.new_ruleset = eliminate_weakest_rules_2(favourite_features=features, k=4, numtoelim=numtoelim,
-                                                        ruleset=self.red_ruleset, xtrain=X_train, ytrain=y_train)
-                vector_pred = apply_ruleset_get_vector_new(ruleset=new_ruleset, xtest=X_test)
+                acc = self.random_forest.get_accuracy_of_ruleset_new(ruleset=new_ruleset, xtest=X_test, ytest=y_test)
 
-                acc = get_accuracy_of_ruleset_new(ruleset=self.new_ruleset, xtest=X_test, ytest=y_test)
+                spec = helpers.get_specificity(reslist=vector_pred, truevals=y_test)
+                sens = helpers.get_sensitivity(reslist=vector_pred, truevals=y_test)
 
-                spec = get_specificity(reslist=vector_pred, truevals=y_test)
-                sens = get_sensitivity(reslist=vector_pred, truevals=y_test)
-
-                reduce_label.config(text="New Rule Size:  " + str(len(self.new_ruleset)))
+                reduce_label.config(text="New Rule Size:  " + str(len(new_ruleset)))
                 acc_label.config(
                     text="Accuracy: " + str(acc) + ", Sensitivity: " + str(sens) + ", Specificity: " + str(spec))
 
         def predict_action():
+            global new_ruleset
+            global red_ruleset
 
             f0_text = e_f0.get()
             f1_text = e_f1.get()
@@ -137,9 +152,9 @@ class Gui:
                        float(f20_text), float(f21_text)]
 
                 df = pd.DataFrame([vec], columns=feature_names)
-                pred = apply_ruleset_get_vector_new(ruleset=self.new_ruleset, xtest=df)
+                pred = self.random_forest.apply_ruleset_get_vector_new(ruleset=new_ruleset, xtest=df)
 
-                if (pred[0] == 0):
+                if pred[0] == 0:
                     string = "HEALTHY!"
                 else:
                     string = "ALZHEIMERS DISEASE"
@@ -152,55 +167,7 @@ class Gui:
         def message_percentage():
             tkMessageBox.showinfo("Percentage", perc_info)
 
-        def print_rules():
-            win = Toplevel(fenster, width=200, height=200)
-            # canvas = Canvas(win, bd=0, highlightthickness=0,
-            #  yscrollcommand=vscrollbar.set, width=800, height=800)
-            label1 = Label(win, text="test\ntest12\nstest\nsefawef")
-            label1.pack()
-
-        def print_rules3():
-            win = Toplevel(fenster, width=2000, height=2000)
-
-            scrollbar = Scrollbar(win, orient=VERTICAL)
-            mylist = Listbox(win, yscrollcommand=scrollbar.set)
-
-            mylist.grid(row=0, column=0)
-
-            vscrollbar = Scrollbar(win, orient=VERTICAL)
-            canvas = Canvas(win, bd=0, highlightthickness=0,
-                            yscrollcommand=vscrollbar.set, width=800, height=800)
-
-            vscrollbar.config(command=mylist.yview)
-
-            text = canvas.create_text(1, 2, anchor='nw', text="test")
-
-            canvas.xview_moveto(0)
-            canvas.yview_moveto(0)
-
-            win.rowconfigure(0, weight=1)
-            win.columnconfigure(0, weight=1)
-
-        def print_rules2():
-            # global new_ruleset
-            # global red_ruleset
-
-            win = Toplevel(fenster)
-            win.title("All Rules in Data Set")
-            scroll = Scrollbar(win, width=20)
-            scroll.pack(side=RIGHT, fill=Y)
-            scroll.grid(row=0, column=0)
-
-            txt = Text(win, yscrollcommand=scroll.set)
-            txt.grid(row=0, column=0)
-            txt.insert(INSERT, build_string_ruleset(ruleset=self.new_ruleset, featurenames=feature_names))
-
-            scroll.config(command=txt)
-
         def print_rules_():
-            # global new_ruleset
-            # global red_ruleset
-
             win = Toplevel(fenster)
             win.title("All Rules in Reduced Rule Set")
             scroll = Scrollbar(win)
@@ -210,12 +177,14 @@ class Gui:
             txt = Text(win, wrap=WORD, yscrollcommand=scroll.set, xscrollcommand=scroll.set)
             txt.grid(row=0, column=0, sticky=N + S + E + W)
             # txt.insert(INSERT, build_string_ruleset(ruleset=self.new_ruleset, featurenames=feature_names))
-            txt.insert(INSERT, print_all_rules(self.new_ruleset, feature_names))
+            txt.insert(INSERT, Gui.print_all_rules(new_ruleset, feature_names))
             # txt.insert(INSERT, "TEST")
 
             scroll.config(command=txt.yview)
 
         def bar_chart_orig_rules():
+            global new_ruleset
+            global red_ruleset
 
             wind = Toplevel(fenster)
             wind.title("Number of rules containing respective features in original rule set")
@@ -223,7 +192,7 @@ class Gui:
             f = Figure(figsize=(5, 4), dpi=100)
             ax = f.add_subplot(111)
 
-            data = get_number_feat_in_rules(ruleset=self.red_ruleset, features=range(0, 22))
+            data = helpers.get_number_feat_in_rules(ruleset=red_ruleset, features=range(0, 22))
 
             ind = np.arange(22)
             width = .5
@@ -235,6 +204,8 @@ class Gui:
             canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
 
         def bar_chart_red_rules():
+            global new_ruleset
+            global red_ruleset
 
             wind = Toplevel(fenster)
             wind.title("Number of rules containing respective features in reduced rule set")
@@ -242,7 +213,7 @@ class Gui:
             f = Figure(figsize=(5, 4), dpi=100)
             ax = f.add_subplot(111)
 
-            data = get_number_feat_in_rules(ruleset=self.new_ruleset, features=range(0, 22))
+            data = helpers.get_number_feat_in_rules(ruleset=new_ruleset, features=range(0, 22))
 
             ind = np.arange(22)  # the x locations for the groups
             width = .5
@@ -318,7 +289,7 @@ class Gui:
 
         reduce_rule_set_button = Button(fenster, text="Reduce Rule Set", command=reduce_action)
         predict_button = Button(fenster, text="Predict", command=predict_action)
-        red1_button = Button(fenster, text="First Reduction", command=self.first_reduction(rule_set=ruleset, label=red1_label))
+        red1_button = Button(fenster, text="First Reduction", command=first_reduction)
 
         bar_chart_orig_button = Button(fenster, text="Show Features in Original Rule Set", command=bar_chart_orig_rules)
         bar_chart_red_button = Button(fenster, text="Show Features in Reduced Rule Set", command=bar_chart_red_rules)

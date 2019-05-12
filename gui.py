@@ -13,6 +13,7 @@ import helpers
 
 red_ruleset = []
 new_ruleset = []
+DEBUG = True
 
 
 class Gui:
@@ -104,9 +105,16 @@ class Gui:
                                                         ruleset=red_ruleset, xtrain=X_train, ytrain=y_train)
                 vector_pred = self.random_forest.apply_ruleset_get_vector_new(ruleset=new_ruleset, xtest=X_test)
 
+                if DEBUG:
+                    print("gui: vector pred len: %s" % len(vector_pred))
+                    print("gui: y_test len: %s" % len(y_test))
+                    test = helpers.get_specificity(reslist=[1,1,1], truevals=[1,1,1])
+                    print("gui: test get_specificity: %s" % test)
+
                 acc = self.random_forest.get_accuracy_of_ruleset_new(ruleset=new_ruleset, xtest=X_test, ytest=y_test)
 
                 spec = helpers.get_specificity(reslist=vector_pred, truevals=y_test)
+                print("gui: spec: %s" % spec)
                 sens = helpers.get_sensitivity(reslist=vector_pred, truevals=y_test)
 
                 reduce_label.config(text="New Rule Size:  " + str(len(new_ruleset)))

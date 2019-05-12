@@ -1,4 +1,6 @@
+from __future__ import division
 import pandas as pd
+
 
 def string_to_int_list(my_string):
     str_list = [x.strip() for x in my_string.split(',')]
@@ -51,11 +53,11 @@ def does_rule_contain_feature(feature, rule):
 
 def does_rule_apply2(rule, row):
     for i in range(0, len(rule) - 1):
-        if (rule[i][1] == 'l'):
-            if (row[int(rule[i][0])] > rule[i][2]):
+        if rule[i][1] == 'l':
+            if row[int(rule[i][0])] > rule[i][2]:
                 return False
         else:
-            if (row[int(rule[i][0])] <= rule[i][2]):
+            if row[int(rule[i][0])] <= rule[i][2]:
                 return False
 
     return True
@@ -108,29 +110,35 @@ def apply_ruleset_one_row_new(ruleset, row):
 def get_specificity(reslist, truevals):
     true_negatives = 0
     false_positives = 0
-    if(len(reslist) != len(truevals)):
-        return (-1)
+    if len(reslist) != len(truevals):
+        return -1
     for i in range(0, len(reslist)):
-        if((truevals[i] == 0) & (reslist[i] == 0)):
-            true_negatives = true_negatives +1
-        if((truevals[i] == 0) & (reslist[i] == 1)):
+        if (truevals[i] == 0) & (reslist[i] == 0):
+            true_negatives = true_negatives + 1
+        if (truevals[i] == 0) & (reslist[i] == 1):
             false_positives = false_positives + 1
-    return (true_negatives / (true_negatives+false_positives))
+    if true_negatives == 0:
+        return 0
+    if true_negatives+false_positives == 0:
+        return 0
+    return true_negatives / (true_negatives+false_positives)
 
 
 def get_sensitivity(reslist, truevals):
     true_positives = 0
     false_negatives = 0
-    if(len(reslist) != len(truevals)):
-        return (-1)
-    for i in range(0,len(reslist)):
-        if((truevals[i] == 1) & (reslist[i] == 1)):
+    if len(reslist) != len(truevals):
+        return -1
+    for i in range(0, len(reslist)):
+        if (truevals[i] == 1) & (reslist[i] == 1):
             true_positives = true_positives + 1
-        if((reslist[i] == 0) & (truevals[i] == 1)):
+        if (reslist[i] == 0) & (truevals[i] == 1):
             false_negatives = false_negatives + 1
-    if(true_positives+false_negatives == 0) :
+    if true_positives == 0:
         return 0
-    return (true_positives / (true_positives+false_negatives))
+    if true_positives+false_negatives == 0:
+        return 0
+    return true_positives / (true_positives+false_negatives)
 
 
 def get_number_feat_in_rules(ruleset, features):

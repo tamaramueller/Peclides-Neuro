@@ -1,4 +1,4 @@
-# Peclides Neuro - The Personalisable Clinical Decision Support System
+# Peclides Neuro - The Personalisable Clinical Decision Support System for Neurological Diseases
 The code of this repository is a first version of **Peclides**, the **Pe**rsonalisable **Cli**nical **De**cision **S**upport System for Neurological Diseases. 
 
 **Peclides Neuro** is a machine learning tool to predict neurological diseases. The current version is implemented to predict Parkinson's diseease given on biologiacal voice measurements. The algorithm is based on random forests and implemented in Python. 

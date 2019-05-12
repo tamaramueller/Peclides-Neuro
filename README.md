@@ -27,6 +27,8 @@ A simple gui will appear and it will allow you to enter data of a new patient an
 
 ## Adjusting the code to your personal needs
 You can adjust the code to your needs, to use your own data sets, your own features and make your own predictions.
+The file config.py contains the names of the features, you can change that to adjust it to your needs. Also the file data.csv contains the data the random forest is trained on,
+you can use a different data set here.
 
 ## Information 
 ### Data Set

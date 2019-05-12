@@ -1,9 +1,11 @@
+from __future__ import division
 from Tkinter import *
 import tkMessageBox
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import pandas as pd
 import numpy as np
+
 
 from reducer import Reducer
 import helpers
@@ -75,8 +77,8 @@ class Gui:
 
         # eliminate useless queries within a rule
         def first_reduction():
-            global new_ruleset
             global red_ruleset
+            global new_ruleset
 
             red_ruleset = self.reducer.reduce_rules()
             red1_label.config(text="new rule size: " + str(len(red_ruleset)))
@@ -98,7 +100,7 @@ class Gui:
                 reduce_label.config(text="no percentage set")
             else:
                 numtoelim = int((1 - (int(percentage) / 100)) * len(red_ruleset))
-                self.random_forest.new_ruleset = self.reducer.eliminate_weakest_rules_2(favourite_features=features, k=4, numtoelim=numtoelim,
+                new_ruleset = self.reducer.eliminate_weakest_rules_2(favourite_features=features, k=4, numtoelim=numtoelim,
                                                         ruleset=red_ruleset, xtrain=X_train, ytrain=y_train)
                 vector_pred = self.random_forest.apply_ruleset_get_vector_new(ruleset=new_ruleset, xtest=X_test)
 

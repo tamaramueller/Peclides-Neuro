@@ -17,9 +17,7 @@ if __name__ == '__main__':
                                                         random_state=42)
 
     rf = RandomForest(x_test, y_test, x_train, y_train)
-    # print("rf: ", type(rf))
     rules_rf = rf.get_all_rules(forest=rf.rf)
-    # print(rules_rf)
     gui = Gui(rules_rf, rf)
 
     gui.window(feature_names, "Speech Data Set", rules_rf, x_train, y_train, x_test, y_test)

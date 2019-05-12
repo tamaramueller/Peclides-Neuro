@@ -38,3 +38,5 @@ class Reducer:
             index = helpers.get_index_min(rule_scores)
             del rules[index]
             del rule_scores[index]
+
+        return rules

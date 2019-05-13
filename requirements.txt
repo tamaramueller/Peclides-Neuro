@@ -1,6 +1,5 @@
 matplotlib
 numpy
-tkinter
 pandas
 sklearn
 pytest

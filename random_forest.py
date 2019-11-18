@@ -5,6 +5,7 @@ import helpers
 import numpy as np
 from sklearn.tree import _tree
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import mean_squared_error
 
 
 class RandomForest:
@@ -16,7 +17,6 @@ class RandomForest:
         self.y_train = y_train
         self.rf = self.create_random_forest(n_estimators=30, max_depth=15, crit="gini", x_train=x_train, y_train=y_train,
                                   random_state=42)
-
         self.orig_ruleset = None
         self.red_ruleset = None
         self.score = self.rf.score(self.x_test, self.y_test)
@@ -55,6 +55,11 @@ class RandomForest:
         correct = helpers.get_correctly_classified_2(vector=vec, ytest=ytest)
 
         return correct / len(vec)
+
+    def get_mse_of_ruleset_new(self, ruleset, xtest, ytest):
+        vec = self.apply_ruleset_get_vector_new(ruleset=ruleset, xtest=xtest)
+
+        return mean_squared_error(ytest, vec)
 
     def apply_ruleset_get_vector_new(self, ruleset, xtest):
         res = []

@@ -1,6 +1,8 @@
 from __future__ import division
 import copy
 
+import statistics
+
 import helpers
 import numpy as np
 from sklearn.tree import _tree
@@ -60,6 +62,12 @@ class RandomForest:
         vec = self.apply_ruleset_get_vector_new(ruleset=ruleset, xtest=xtest)
 
         return mean_squared_error(ytest, vec)
+
+    def calculate_model_performance_parameter2(self, ruleset, xtest, ytest):
+        vec = self.apply_ruleset_get_vector_new(ruleset=ruleset, xtest=xtest)
+
+        return 1 - (mean_squared_error(ytest, vec) / statistics.variance(ytest)) \
+               + (((np.mean(ytest) - np.mean(vec)) ** 2) / statistics.variance(ytest))
 
     def apply_ruleset_get_vector_new(self, ruleset, xtest):
         res = []

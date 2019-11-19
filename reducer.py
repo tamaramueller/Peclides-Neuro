@@ -74,6 +74,19 @@ class Reducer:
 
         return rules
 
+    def eliminate_weakest_rules_random(self, numtoelim, ruleset):
+
+        rule_scores = self.personaliser.get_rule_score_random(ruleset=ruleset)
+
+        rules = copy.deepcopy(ruleset)
+
+        for i in range(0, numtoelim):
+            index = helpers.get_index_min(rule_scores)
+            del rules[index]
+            del rule_scores[index]
+
+        return rules
+
 
 if __name__ == '__main__':
 

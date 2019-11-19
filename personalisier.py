@@ -1,4 +1,5 @@
 import helpers
+import numpy as np
 
 
 class Personaliser:
@@ -114,3 +115,7 @@ class Personaliser:
             res.append(score_pers)
 
         return res
+
+    @staticmethod
+    def get_rule_score_random(ruleset):
+        return np.random.uniform(0, 1, len(ruleset)).tolist()

@@ -57,6 +57,7 @@ class Personaliser:
 
             score_pers = score2 + addition
             res.append(score_pers)
+            print(score_pers)
 
         return res
 

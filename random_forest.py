@@ -12,12 +12,12 @@ from sklearn.metrics import mean_squared_error
 
 class RandomForest:
 
-    def __init__(self, x_test, y_test, x_train, y_train):
+    def __init__(self, x_test, y_test, x_train, y_train, criterion="gini"):
         self.x_test = x_test
         self.y_test = y_test
         self.x_train = x_train
         self.y_train = y_train
-        self.rf = self.create_random_forest(n_estimators=30, max_depth=15, crit="gini", x_train=x_train, y_train=y_train,
+        self.rf = self.create_random_forest(n_estimators=30, max_depth=15, crit=criterion, x_train=x_train, y_train=y_train,
                                   random_state=42)
         self.orig_ruleset = None
         self.red_ruleset = None
